@@ -1,7 +1,9 @@
-const app = require('./src/app');
 const dotenv = require('dotenv');
 dotenv.config();
+
+const app = require('./src/app');
 const connectDb = require('./src/config/database');
+const redis = require('./src/config/cache');
 
 connectDb();
 

@@ -1,7 +1,26 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router'
+import UseAuth from '../UseAuth'
+import { useNavigate } from 'react-router'
 
 const Login = () => {
+
+  const navigate = useNavigate()
+
+
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+
+  const { handleLogin , loading , user} = UseAuth()
+
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        handleLogin({email , password})
+        navigate("/")
+    }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#0d0d14] px-4 py-10 relative overflow-hidden">
@@ -35,7 +54,7 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={e => e.preventDefault()} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           {/* Email */}
           <div className="flex flex-col gap-1.5">
@@ -48,6 +67,8 @@ const Login = () => {
                 <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               <input
+                value={email}
+                onChange={(e) => {setEmail(e.target.value)}}
                 type="email"
                 id="email"
                 placeholder="you@example.com"
@@ -73,6 +94,8 @@ const Login = () => {
                 <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               <input
+                value={password}
+                onChange={(e) => {setPassword(e.target.value)}}
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 placeholder="••••••••"
@@ -138,12 +161,12 @@ const Login = () => {
         </div>
 
         {/* Signup prompt */}
-        <p className="text-center text-sm text-[#8888aa]">
+        <Link className="text-center text-sm text-[#8888aa]">
           Don't have an account?{' '}
-          <a href="/signup" className="text-[#7F77DD] font-medium hover:text-[#a09ce8] transition-colors duration-200">
+          <Link to="/register" className="text-[#7F77DD] font-medium hover:text-[#a09ce8] transition-colors duration-200">
             Sign up free
-          </a>
-        </p>
+          </Link>
+        </Link>
 
       </div>
     </main>

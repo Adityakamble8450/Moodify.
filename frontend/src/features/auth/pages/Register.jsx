@@ -1,8 +1,27 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router'
+import UseAuth from '../UseAuth'
+import {useNavigate} from 'react-router'
+
 
 const Register = () => {
+
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
+
+  const { handleRegister , loading , user} = UseAuth()
+
+  const Register = (e) => {
+    e.preventDefault()
+    handleRegister({username , email , password})
+    navigate("/")
+  }
+
+
+
 
 
   return (
@@ -37,7 +56,7 @@ const Register = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={e => e.preventDefault()} className="flex flex-col gap-4">
+        <form onSubmit={Register} className="flex flex-col gap-4">
 
               <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-xs font-medium text-[#8888aa] tracking-wide">
@@ -51,6 +70,8 @@ const Register = () => {
               <input
                 type="text"
                 id="username"
+                value={username}
+                onChange={(e) => {setUsername(e.target.value)}}
                 placeholder="Username"
                 autoComplete="username"
                 className="w-full h-[46px] pl-10 pr-4 bg-[#1e1e2a] border border-white/[0.07] rounded-xl text-sm text-white placeholder-[#555570] outline-none transition-all duration-200 focus:border-[#7F77DD]/50 focus:ring-2 focus:ring-[#7F77DD]/10 hover:border-white/[0.14] hover:bg-[#22222f]"
@@ -71,6 +92,8 @@ const Register = () => {
               <input
                 type="email"
                 id="email"
+                value={email}
+                onChange={(e) => {setEmail(e.target.value)}}
                 placeholder="you@example.com"
                 autoComplete="email"
                 className="w-full h-[46px] pl-10 pr-4 bg-[#1e1e2a] border border-white/[0.07] rounded-xl text-sm text-white placeholder-[#555570] outline-none transition-all duration-200 focus:border-[#7F77DD]/50 focus:ring-2 focus:ring-[#7F77DD]/10 hover:border-white/[0.14] hover:bg-[#22222f]"
@@ -97,6 +120,8 @@ const Register = () => {
                 type={showPassword ? 'text' : 'password'}
                 id="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => {setPassword(e.target.value)}}
                 autoComplete="current-password"
                 className="w-full h-[46px] pl-10 pr-10 bg-[#1e1e2a] border border-white/[0.07] rounded-xl text-sm text-white placeholder-[#555570] outline-none transition-all duration-200 focus:border-[#7F77DD]/50 focus:ring-2 focus:ring-[#7F77DD]/10 hover:border-white/[0.14] hover:bg-[#22222f]"
               />
@@ -159,12 +184,12 @@ const Register = () => {
         </div>
 
         {/* Signup prompt */}
-        <p className="text-center text-sm text-[#8888aa]">
+        <Link className="text-center text-sm text-[#8888aa]">
           already have an account?{' '}
-          <Link href="/login" className="text-[#7F77DD] font-medium hover:text-[#a09ce8] transition-colors duration-200">
+          <Link to="/login" className="text-[#7F77DD] font-medium hover:text-[#a09ce8] transition-colors duration-200">
             Sign in
           </Link>
-        </p>
+        </Link>
 
       </div>
     </main>

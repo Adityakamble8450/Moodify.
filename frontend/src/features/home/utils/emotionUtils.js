@@ -1,7 +1,5 @@
 export const getBlendshapeScore = (blendshapes, name) => {
-  const shape = blendshapes.find(
-    (item) => item.categoryName === name
-  );
+  const shape = blendshapes.find((item) => item.categoryName === name);
   return shape ? shape.score : 0;
 };
 
@@ -24,11 +22,11 @@ export const detectEmotionFromBlendshapes = (blendshapes) => {
   let detectedEmotion = "Neutral";
 
   if (smile > 0.7) {
-    detectedEmotion = "Happy 😀";
+    detectedEmotion = "Happy";
   } else if (jawOpen > 0.6 && browUp > 0.5) {
-    detectedEmotion = "Surprised 😲";
-  } else if (mouthFrown > 0.5) {
-    detectedEmotion = "Sad 😢";
+    detectedEmotion = "Surprised";
+  } else if (mouthFrown > 0.05) {
+    detectedEmotion = "Sad";
   }
 
   return {

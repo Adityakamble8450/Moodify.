@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const songSchema = new mongoose.Schema({
-    url: {
+     url: {
         type: String,
         required: true
     },
     posterUrl: {
         type: String,
-        required: true,
+       default : ""
     },
     title: {
         type: String,

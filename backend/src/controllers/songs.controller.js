@@ -1,54 +1,51 @@
-const Song = require('../model/songs.model').default;
-const id3 = require('node-id3');
-const sotrageService = require('../services/storage.services');
+const songModel = require("../model/songs.model")
+const storageService = require("../services/storage.services")
+const id3 = require("node-id3")
 
+async function uploadSong(req, res) {
+    const songBuffer = req.file.buffer
+    const { mood } = req.body
 
-const uploadAudio = async (req, res) => {
+    const tags = id3.read(songBuffer)
+    const songTitle = tags.title || req.file.originalname.replace(/\.[^/.]+$/, "")
 
-    
-    
-    const songBuffer = req.file.buffer;
-    const { mood } = req.body;
-
-    const tags = id3.read(songBuffer);
-
-    const [songFile , posterFile] = await Promise.all([
-        sotrageService.uploadFile({
+    const [songFile] = await Promise.all([
+        storageService.uploadFile({
             buffer: songBuffer,
-            fileNAme: tags.title + ".mp3" ,
+            fileName: songTitle + ".mp3",
             folder: "moodify/songs"
+        }),
+        // storageService.uploadFile({
+        //     buffer: tags.image.imageBuffer,
+        //     fileName: songTitle + ".jpeg",
+        //     folder: "moodify/posters"
+        // })
+    ])
 
-        }) , 
-        sotrageService.uploadFile({
-            buffer: tags.image.imageBuffer,
-            fileNAme: tags.title + ".jpg" ,
-            folder: "moodify/posters"
-        })
-      
-    ]);
-
-    const song = await Song.create({
-        title : tags.title,
-        url : songFile.url,
-        posterUrl : posterFile.url,
-        mood : mood
+    const song = await songModel.create({
+        title: songTitle,
+        url: songFile.url,
+        posterUrl: "",
+        mood
     })
 
-    res.status(201).json({message : "Song uploaded successfully" , song : song})
-     
-};
-
-const getSongs = async (req, res) => {
-    const { mood } = req.query;
-
-    const songs = await Song.find(mood ? { mood: mood } : {});
-
-    res.status(200).json({ songs: songs });
-
+    res.status(201).json({
+        message: "song created successfully",
+        song
+    })
 }
 
+async function getSong(req, res) {
+    const { mood } = req.query
 
-module.exports = {
-    uploadAudio ,
-    getSongs
-};
+    const song = await songModel.findOne({
+        mood,
+    })
+
+    res.status(200).json({
+        message: "song fetched successfully.",
+        song,
+    })
+}
+
+module.exports = { uploadSong, getSong }

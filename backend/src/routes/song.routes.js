@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const {uploadAudio , getSongs} = require('../controllers/songs.controller');
+const {uploadSong, getSong} = require('../controllers/songs.controller');
 const uploadMiddleware = require('../middelware/multer.middelware');
 
 
 
-router.post('/', uploadMiddleware.single('song'), uploadAudio);
+router.post('/', uploadMiddleware.single('song'), uploadSong);
 
-router.get('/', getSongs);
+router.get('/', getSong);
 
 
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router'
 import UseAuth from '../UseAuth'
-import {useNavigate} from 'react-router'
+import {useNavigate} from 'react-router-dom'
 
 
 const Register = () => {
@@ -12,12 +12,12 @@ const Register = () => {
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
 
-  const { handleRegister , loading , user} = UseAuth()
+  const { handleRegister , loading } = UseAuth()
 
-  const Register = (e) => {
+  const Register = async (e) => {
     e.preventDefault()
-    handleRegister({username , email , password})
-    navigate("/")
+    const data = await handleRegister({username , email , password})
+    navigate(data?.newUser?.isAdmin ? "/dashbord" : "/")
   }
 
 
@@ -150,9 +150,10 @@ const Register = () => {
           {/* Sign in button */}
           <button
             type="submit"
+            disabled={loading}
             className="mt-1 w-full h-[46px] rounded-xl bg-gradient-to-r from-[#7F77DD] to-[#D4537E] text-white text-sm font-semibold tracking-wide shadow-lg shadow-[#7F77DD]/30 hover:shadow-[#7F77DD]/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200"
           >
-            Sign in
+            {loading ? "Creating account..." : "Sign up"}
           </button>
 
         </form>

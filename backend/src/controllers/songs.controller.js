@@ -3,49 +3,74 @@ const storageService = require("../services/storage.services")
 const id3 = require("node-id3")
 
 async function uploadSong(req, res) {
-    const songBuffer = req.file.buffer
-    const { mood } = req.body
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "Song file is required" });
+        }
 
-    const tags = id3.read(songBuffer)
-    const songTitle = tags.title || req.file.originalname.replace(/\.[^/.]+$/, "")
+        const songBuffer = req.file.buffer;
+        const { mood } = req.body;
 
-    const [songFile] = await Promise.all([
-        storageService.uploadFile({
+        if (!mood) {
+            return res.status(400).json({ message: "Mood is required" });
+        }
+
+        const tags = id3.read(songBuffer) || {};
+        const songTitle = tags.title || req.file.originalname.replace(/\.[^/.]+$/, "");
+        const artist = tags.artist || "Unknown Artist";
+        const posterBuffer = tags.image?.imageBuffer;
+        const fileExtension = req.file.originalname.split(".").pop() || "mp3";
+
+        const songFile = await storageService.uploadFile({
             buffer: songBuffer,
-            fileName: songTitle + ".mp3",
+            fileName: `${songTitle}.${fileExtension}`,
             folder: "moodify/songs"
-        }),
-        storageService.uploadFile({
-            buffer: tags.image.imageBuffer,
-            fileName: songTitle + ".jpeg",
-            folder: "moodify/posters"
-        })
-    ])
+        });
 
-    const song = await songModel.create({
-        title: songTitle,
-        url: songFile.url,
-        posterUrl: "",
-        mood
-    })
+        let posterUrl = "";
 
-    res.status(201).json({
-        message: "song created successfully",
-        song
-    })
+        if (posterBuffer) {
+            const posterFile = await storageService.uploadFile({
+                buffer: posterBuffer,
+                fileName: `${songTitle}.jpeg`,
+                folder: "moodify/posters"
+            });
+            posterUrl = posterFile.url;
+        }
+
+        const song = await songModel.create({
+            title: songTitle,
+            artist,
+            url: songFile.url,
+            posterUrl,
+            mood
+        });
+
+        res.status(201).json({
+            message: "song created successfully",
+            song
+        });
+    } catch (error) {
+        console.error("Song upload failed:", error);
+        res.status(500).json({ message: "Song upload failed" });
+    }
 }
 
 async function getSong(req, res) {
-    const { mood } = req.query
+    try {
+        const { mood } = req.query;
 
-    const song = await songModel.findOne({
-        mood,
-    })
+        const query = mood ? { mood } : {};
+        const song = await songModel.findOne(query);
 
-    res.status(200).json({
-        message: "song fetched successfully.",
-        song,
-    })
+        res.status(200).json({
+            message: "song fetched successfully.",
+            song,
+        });
+    } catch (error) {
+        console.error("Song fetch failed:", error);
+        res.status(500).json({ message: "Unable to fetch song" });
+    }
 }
 
 const getMoodPlaylist = async (req, res) => {
@@ -76,8 +101,24 @@ const getMoodPlaylist = async (req, res) => {
   }
 };
 
+const getAdminSongs = async (req, res) => {
+  try {
+    const songs = await songModel.find().sort({ _id: -1 });
+
+    res.status(200).json({
+      success: true,
+      total: songs.length,
+      songs
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 
 
 
-module.exports = { uploadSong, getSong , getMoodPlaylist }
+module.exports = { uploadSong, getSong , getMoodPlaylist, getAdminSongs }

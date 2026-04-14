@@ -4,6 +4,25 @@ const Blacklisting = require("../model/blacklisting.model");
 const redis = require("../config/cache");
 const bcrypt = require("bcryptjs");
 
+function isAdminUser(user) {
+    if (!user?.email || !process.env.ADMIN_EMAIL) {
+        return false;
+    }
+
+    return user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase();
+}
+
+function sanitizeUser(user) {
+    if (!user) {
+        return null;
+    }
+
+    return {
+        ...user.toObject(),
+        password: undefined,
+        isAdmin: isAdminUser(user)
+    };
+}
 
 
 const register = async (req, res) => {
@@ -39,7 +58,11 @@ const register = async (req, res) => {
             maxAge: 3 * 24 * 60 * 60 * 1000
         })
 
-        res.status(201).json({ message: "User registered successfully", token: token, newUser: newUser })
+        res.status(201).json({
+            message: "User registered successfully",
+            token: token,
+            newUser: sanitizeUser(newUser)
+        })
 
     }
     catch (error) {
@@ -78,7 +101,11 @@ const login = async (req, res) => {
             sameSite: "strict",
             maxAge: 3 * 24 * 60 * 60 * 1000
         })
-        res.status(200).json({ message: "Login successful", token: jwtToken, user: { ...user.toObject(), password: undefined } })
+        res.status(200).json({
+            message: "Login successful",
+            token: jwtToken,
+            user: sanitizeUser(user)
+        })
     } catch (error) {
         console.error("Error during login:", error);
         res.status(500).json({ message: "Server error during login" });
@@ -92,7 +119,7 @@ const getme = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" })
         };
-        res.status(200).json({ message: "User found", user: user })
+        res.status(200).json({ message: "User found", user: sanitizeUser(user) })
     } catch (error) {
         console.error("Error during getme:", error);
         res.status(500).json({ message: "Server error during getme" });

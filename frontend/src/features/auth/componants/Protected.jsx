@@ -1,7 +1,7 @@
 import useAuth from "../UseAuth";
 import { Navigate } from "react-router-dom";
 
-const Protected = ({ children }) => {
+const Protected = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -10,6 +10,10 @@ const Protected = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (adminOnly && !user?.isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return children;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { detectEmotionFromBlendshapes } from "../utils/emotionUtils";
-import { getSong } from "../services/song.api";
+import { getMoodPlaylist } from "../services/song.api";
 import Player from "../Componant/Player";
 
 const MOOD_CONFIG = {
@@ -25,6 +25,7 @@ export default function FaceEmotionDetector() {
   const [emotion, setEmotion] = useState(null);
   const [scores, setScores] = useState({});
   const [song, setSong] = useState(null);
+  const [playlist, setPlaylist] = useState([]);
   const [isDetecting, setIsDetecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -90,22 +91,31 @@ export default function FaceEmotionDetector() {
 
     if (!apiMood) {
       setSong(null);
+      setPlaylist([]);
       return;
     }
 
     setSongLoading(true);
 
     try {
-      const data = await getSong({ mood: apiMood });
+      const data = await getMoodPlaylist({ mood: apiMood });
 
-      if (data?.song) {
-        setSong({ ...data.song, mood: detectedEmotion });
+      if (data?.playlist?.length) {
+        const normalizedPlaylist = data.playlist.map((track) => ({
+          ...track,
+          mood: detectedEmotion,
+        }));
+
+        setPlaylist(normalizedPlaylist);
+        setSong(normalizedPlaylist[0]);
       } else {
         setSong(null);
+        setPlaylist([]);
       }
     } catch (err) {
       console.error("Song fetch error:", err);
       setSong(null);
+      setPlaylist([]);
     } finally {
       setSongLoading(false);
     }
@@ -119,6 +129,7 @@ export default function FaceEmotionDetector() {
     setEmotion(null);
     setScores({});
     setSong(null);
+    setPlaylist([]);
 
     let detected = false;
     let latestDetectedEmotion = null;
@@ -337,6 +348,44 @@ export default function FaceEmotionDetector() {
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {playlist.length > 0 && (
+              <div className="bg-[#16161f]/80 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs text-[#555570] font-medium uppercase tracking-wider">
+                    Playlist for {emotion}
+                  </p>
+                  <span className="text-xs text-[#8888aa]">{playlist.length} songs</span>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {playlist.map((track) => {
+                    const isActive = track._id === song?._id;
+
+                    return (
+                      <button
+                        key={track._id}
+                        type="button"
+                        onClick={() => setSong(track)}
+                        className="w-full text-left rounded-2xl border px-4 py-3 transition-all duration-200"
+                        style={{
+                          background: isActive ? "#232336" : "#1e1e2a",
+                          borderColor: isActive ? "#7F77DD66" : "rgba(255,255,255,0.07)",
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{track.title}</p>
+                            <p className="text-xs text-[#8888aa] truncate">{track.artist || "Unknown Artist"}</p>
+                          </div>
+                          <span className="text-xs text-[#7F77DD]">{isActive ? "Playing" : "Play"}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

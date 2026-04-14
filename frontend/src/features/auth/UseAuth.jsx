@@ -11,6 +11,7 @@ const UseAuth = () => {
     try {
       const data = await register({ username, email, password });
       setUser(data.user ?? data.newUser ?? null);
+      return data;
     } finally {
       setLoading(false);
     }
@@ -21,6 +22,7 @@ const UseAuth = () => {
     try {
       const data = await login({ email, password });
       setUser(data.user ?? null);
+      return data;
     } finally {
       setLoading(false);
     }

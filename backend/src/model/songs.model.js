@@ -13,12 +13,17 @@ const songSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    artist: {
+        type: String,
+        default: "Unknown Artist"
+    },
     mood: {
         type: String,
         enum: {
-            values: [ "sad", "happy", "surprised" ],
+            values: ["sad", "happy", "surprised"],
             message: "Enum this is"
-        }
+        },
+        required: true
     }
 }); const Song = mongoose.model('Song', songSchema);
 
